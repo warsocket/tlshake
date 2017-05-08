@@ -30,27 +30,32 @@ def displayname(value, lookuptable={}):
 
 def send_client_hello(sock, record_version, handshake_version, **options):
 	
-	
-	# print ">>> %s:%d Tls Record version %s ClientHello version %s >> %s:%d" % ( sock.getsockname() + (displayname(record_version, names.tls_versions),) + (displayname(handshake_version, names.tls_versions),) + sock.getpeername() )
-	print "TLS Record %s ClientHello %s >>> [%s:%d]" % ( (displayname(record_version, names.tls_versions), displayname(handshake_version, names.tls_versions)) + sock.getpeername())
-	# print sock.getpeername()
-	# print sock.getsockname()
-	# print ""
-	# print "================================ TLS PAYLOAD ================================"
-	# print "TLS handshake record version: %s" % displayname(record_version, names.tls_versions)
-	# print "Client Hello version: %s" % displayname(handshake_version, names.tls_versions)
-	# print "Random: %s" % displayname()
+	if args.verbose > 0:
+		# print ">>> %s:%d Tls Record version %s ClientHello version %s >> %s:%d" % ( sock.getsockname() + (displayname(record_version, names.tls_versions),) + (displayname(handshake_version, names.tls_versions),) + sock.getpeername() )
+		print "TLS Record %s ClientHello %s >>> [%s:%d]" % ( (displayname(record_version, names.tls_versions), displayname(handshake_version, names.tls_versions)) + sock.getpeername())
+		# print sock.getpeername()
+		# print sock.getsockname()
+		# print ""
+		# print "================================ TLS PAYLOAD ================================"
+		# print "TLS handshake record version: %s" % displayname(record_version, names.tls_versions)
+		# print "Client Hello version: %s" % displayname(handshake_version, names.tls_versions)
+		# print "Random: %s" % displayname()
 
-	# if options["ciphers"]:
-	# 	print "---------------------------------- CIPHERS ----------------------------------"		
-	# 	for c in options["ciphers"]:
-	# 		print displayname(c,names.tls_ciphers)
+		# if options["ciphers"]:
+		# 	print "---------------------------------- CIPHERS ----------------------------------"		
+		# 	for c in options["ciphers"]:
+		# 		print displayname(c,names.tls_ciphers)
 
 	return sock.sendall( make_client_hello(record_version, handshake_version, **options) ) 
 
 
 def handle_server_response(sock):
-	data = sock.recv( 0xFFFF )
+	try:
+		data = sock.recv( 0xFFFF )
+	except Exception as e:
+		print e
+		return {}
+
 	response = parse_server_response(data)
 
 	if response["knownreply"]:
@@ -58,25 +63,60 @@ def handle_server_response(sock):
 
 		if response["contenttype"] == 22: #Server Hello
 			extra = " %s %s %s" % ( displayname(response["hello_version"], names.tls_versions), displayname(response["hello_cipher"], names.tls_ciphers), displayname(response["hello_compression"], names.tls_compressions) )
-		print "[%s:%d] <<< TLS Record %s %s%s" % (sock.getsockname() + (displayname(response["version"], names.tls_versions), displayname(response["contenttype"], names.tls_serverhello_contenttype), extra ))
+		if args.verbose > 0:
+			print "[%s:%d] <<< TLS Record %s %s%s" % (sock.getsockname() + (displayname(response["version"], names.tls_versions), displayname(response["contenttype"], names.tls_serverhello_contenttype), extra ))
+		else:
+			print displayname(response["hello_cipher"], names.tls_ciphers)
 
 	else:
-		print "[%s:%d] <<< UNKNOWN RESPONSE" % sock.getsockname()
+		if args.verbose > 0:
+			print "[%s:%d] <<< UNKNOWN RESPONSE" % sock.getsockname()
 	return response
 
 
 # Main 
 
+def get_param_value(string, lookuptable = {}):
+	if string in lookuptable:
+		return lookuptable[string]
+	else:
+		try:
+			assert(string[0:2] == "0x")
+			return string[2:].decode("hex")
+		except:
+			print "Cannot parse '%s' as payload, please supply a raw value in hex  (0x....)" % string
+			print "You can also use one (or multiple, depending on the option) of the following known values: %s" % " ".join(lookuptable.keys())
+			exit(1)
 
 parser = argparse.ArgumentParser(description='Send crafted TLS ClientHello to servers.')
+parser.add_argument('--verbose', type=int, default=1, help="Verbosity level (0-2) (default:1)")
 parser.add_argument('host', type=str, help="IP address or hostname")
 parser.add_argument('--port', '-p', type=int, default=443, help="Port to connect to (default: 443)")
+parser.add_argument('--record-version', '-v', type=str, default="TLSv1.2", help="Client Hello TLS version (default: TLSv1.2)")
+parser.add_argument('--hello-version', type=str, help="Record layer version (default: [used record version])")
+parser.add_argument('--ciphers', '-c', type=str, nargs="*", help="Cipher(s) to request (default: All known ciphers)")
+parser.add_argument('--compressions', '-z', type=str, nargs="*", help="Compressions(s) to request (default: All known compressions)")
 args = parser.parse_args()
+
+if not args.hello_version: args.hello_version = args.record_version
+record_version = get_param_value(args.record_version, names.rev_tls_versions)
+hello_version = get_param_value(args.record_version, names.rev_tls_versions)
+
+if args.ciphers: 
+	ciphers = map(lambda x: get_param_value(x, names.rev_tls_ciphers), args.ciphers)
+else:
+	ciphers = names.tls_ciphers.keys()
+
+if args.compressions: 
+	compressions = map(lambda x: get_param_value(x, names.rev_tls_compressions), args.compressions)
+else:
+	compressions = names.tls_compressions.keys()
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.settimeout(2)
 sock.connect((args.host, args.port))
 
-send_client_hello(sock, "\x03\x03", "\x03\x03", ciphers=[names.tls_ciphers.keys()])
-# send_client_hello(sock, "\x03\x03", "\x03\x03")
+if args.verbose > 0:
+	print ""
+send_client_hello(sock, record_version, hello_version, ciphers=ciphers, compressions=compressions)
 handle_server_response(sock)

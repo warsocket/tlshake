@@ -372,5 +372,6 @@ rev_tls_ciphers = rev(tls_ciphers)
 
 tls_compressions = {
 '\x00' : 'null', 
+'\x01' : 'DEFLATE',
 }
 rev_tls_compressions = rev(tls_compressions)

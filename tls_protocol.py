@@ -94,10 +94,10 @@ def make_client_hello(record_version, handshake_version, **options):
 	sessionid = "\x00"*32
 
 	if "ciphers" in options: cipherlist = options["ciphers"]
-	if "extensions" in options: cipherlist = options["extensions"]
-	if "compressions" in options: cipherlist = options["compressions"]
-	if "random" in options: cipherlist = options["random"]
-	if "sessionid" in options: cipherlist = options["sessionid"]
+	if "extensions" in options: extensionlist = options["extensions"]
+	if "compressions" in options: compressionmethods = options["compressions"]
+	if "random" in options: random = options["random"]
+	if "sessionid" in options: sessionid = options["sessionid"]
 
 	return pkt(
 		"\x16", 
