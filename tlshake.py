@@ -22,15 +22,23 @@ import argparse
 from tls_protocol import make_client_hello, parse_server_response
 
 
+def socket_from_args(args):
+	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	sock.settimeout(2)
+	sock.connect((args.host, args.port))
+	return sock
+
+
 def displayname(value, lookuptable={}):
 	if value in lookuptable:
 		return lookuptable[value]
 	else:
 		return "0x%s" % value.encode("hex")
 
-def send_client_hello(sock, record_version, handshake_version, **options):
-	
-	if args.verbose > 0:
+
+def send_client_hello(sock, record_version, handshake_version, verbosity=0, **options):
+
+	if verbosity > 1:
 		# print ">>> %s:%d Tls Record version %s ClientHello version %s >> %s:%d" % ( sock.getsockname() + (displayname(record_version, names.tls_versions),) + (displayname(handshake_version, names.tls_versions),) + sock.getpeername() )
 		print "TLS Record %s ClientHello %s >>> [%s:%d]" % ( (displayname(record_version, names.tls_versions), displayname(handshake_version, names.tls_versions)) + sock.getpeername())
 		# print sock.getpeername()
@@ -49,7 +57,7 @@ def send_client_hello(sock, record_version, handshake_version, **options):
 	return sock.sendall( make_client_hello(record_version, handshake_version, **options) ) 
 
 
-def handle_server_response(sock):
+def handle_server_response(sock, verbosity=0):
 	try:
 		data = sock.recv( 0xFFFF )
 	except Exception as e:
@@ -63,18 +71,17 @@ def handle_server_response(sock):
 
 		if response["contenttype"] == 22: #Server Hello
 			extra = " %s %s %s" % ( displayname(response["hello_version"], names.tls_versions), displayname(response["hello_cipher"], names.tls_ciphers), displayname(response["hello_compression"], names.tls_compressions) )
-		if args.verbose > 0:
+		if verbosity > 1:
 			print "[%s:%d] <<< TLS Record %s %s%s" % (sock.getsockname() + (displayname(response["version"], names.tls_versions), displayname(response["contenttype"], names.tls_serverhello_contenttype), extra ))
-		else:
+		elif verbosity == 1:
 			print displayname(response["hello_cipher"], names.tls_ciphers)
 
 	else:
-		if args.verbose > 0:
+		if verbosity > 1:
 			print "[%s:%d] <<< UNKNOWN RESPONSE" % sock.getsockname()
 	return response
 
 
-# Main 
 
 def get_param_value(string, lookuptable = {}):
 	if string in lookuptable:
@@ -88,35 +95,43 @@ def get_param_value(string, lookuptable = {}):
 			print "You can also use one (or multiple, depending on the option) of the following known values: %s" % " ".join(lookuptable.keys())
 			exit(1)
 
-parser = argparse.ArgumentParser(description='Send crafted TLS ClientHello to servers.')
-parser.add_argument('--verbose', type=int, default=1, help="Verbosity level (0-2) (default:1)")
-parser.add_argument('host', type=str, help="IP address or hostname")
-parser.add_argument('--port', '-p', type=int, default=443, help="Port to connect to (default: 443)")
-parser.add_argument('--record-version', '-v', type=str, default="TLSv1.2", help="Client Hello TLS version (default: TLSv1.2)")
-parser.add_argument('--hello-version', type=str, help="Record layer version (default: [used record version])")
-parser.add_argument('--ciphers', '-c', type=str, nargs="*", help="Cipher(s) to request (default: All known ciphers)")
-parser.add_argument('--compressions', '-z', type=str, nargs="*", help="Compressions(s) to request (default: All known compressions)")
-args = parser.parse_args()
+if __name__ == "__main__":
+	parser = argparse.ArgumentParser(description='Send crafted TLS ClientHello to servers.')
+	parser.add_argument('--verbose', type=int, default=2, help="Verbosity level (0-3) (default:2)")
+	parser.add_argument('host', type=str, help="IP address or hostname")
+	parser.add_argument('--port', '-p', type=int, default=443, help="Port to connect to (default: 443)")
+	parser.add_argument('--record-version', '-v', type=str, default="TLSv1.2", help="Client Hello TLS version (default: TLSv1.2)")
+	parser.add_argument('--hello-version', type=str, help="Record layer version (default: [used record version])")
+	parser.add_argument('--ciphers', '-c', type=str, nargs="*", help="Cipher(s) to request (default: All known ciphers)")
+	parser.add_argument('--compressions', '-z', type=str, nargs="*", help="Compressions(s) to request (default: All known compressions)")
+	#TODO TLS addons likle SNI, EDHC curves SCSV, etc
+	parser.add_argument('--script', '-s', type=str, nargs="+", help="Script name and params.")
+	args = parser.parse_args()
 
-if not args.hello_version: args.hello_version = args.record_version
-record_version = get_param_value(args.record_version, names.rev_tls_versions)
-hello_version = get_param_value(args.record_version, names.rev_tls_versions)
 
-if args.ciphers: 
-	ciphers = map(lambda x: get_param_value(x, names.rev_tls_ciphers), args.ciphers)
-else:
-	ciphers = names.tls_ciphers.keys()
+	if args.script:
+		import script
+		script.scripts[args.script[0]](args)# get fulladdr from args
 
-if args.compressions: 
-	compressions = map(lambda x: get_param_value(x, names.rev_tls_compressions), args.compressions)
-else:
-	compressions = names.tls_compressions.keys()
+	else:
+		if not args.hello_version: args.hello_version = args.record_version
+		record_version = get_param_value(args.record_version, names.rev_tls_versions)
+		hello_version = get_param_value(args.record_version, names.rev_tls_versions)
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.settimeout(2)
-sock.connect((args.host, args.port))
+		if args.ciphers: 
+			ciphers = map(lambda x: get_param_value(x, names.rev_tls_ciphers), args.ciphers)
+		else:
+			ciphers = names.tls_ciphers.keys()
 
-if args.verbose > 0:
-	print ""
-send_client_hello(sock, record_version, hello_version, ciphers=ciphers, compressions=compressions)
-handle_server_response(sock)
+		if args.compressions: 
+			compressions = map(lambda x: get_param_value(x, names.rev_tls_compressions), args.compressions)
+		else:
+			compressions = names.tls_compressions.keys()
+
+
+		if args.verbose > 0:
+			print ""
+
+		sock = socket_from_args(args)
+		send_client_hello(sock, record_version, hello_version, args.verbose, ciphers=ciphers, compressions=compressions)
+		handle_server_response(sock, args.verbose)
