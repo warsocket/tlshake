@@ -18,6 +18,7 @@
 
 import socket
 import names
+import starttls
 import argparse
 from tls_protocol import make_client_hello, parse_server_response
 
@@ -26,6 +27,8 @@ def socket_from_args(args):
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sock.settimeout(2)
 	sock.connect((args.host, args.port))
+	if args.starttls:
+		starttls.available[args.starttls](sock)
 	return sock
 
 
@@ -35,7 +38,7 @@ def displayname(value, lookuptable={}):
 	else:
 		return "0x%s" % value.encode("hex")
 
-
+#This should in time support all params that were being processed in the beginning
 def send_client_hello(sock, record_version, handshake_version, verbosity=0, **options):
 
 	if verbosity > 1:
@@ -104,10 +107,11 @@ if __name__ == "__main__":
 	parser.add_argument('--hello-version', type=str, help="Record layer version (default: [used record version])")
 	parser.add_argument('--ciphers', '-c', type=str, nargs="*", help="Cipher(s) to request (default: All known ciphers)")
 	parser.add_argument('--compressions', '-z', type=str, nargs="*", help="Compressions(s) to request (default: All known compressions)")
+
 	#TODO TLS addons likle SNI, EDHC curves SCSV, etc
+	parser.add_argument('--starttls', type=str, help="Use Starttls")
 	parser.add_argument('--script', '-s', type=str, nargs="+", help="Script name and params.")
 	args = parser.parse_args()
-
 
 	if args.script:
 		import script
