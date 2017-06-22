@@ -113,29 +113,39 @@ if __name__ == "__main__":
 	parser.add_argument('--script', '-s', type=str, nargs="+", help="Script name and params.")
 	args = parser.parse_args()
 
+	#preprocessing args
+	if not args.hello_version: args.hello_version = args.record_version
+	args.p_record_version = get_param_value(args.record_version, names.rev_tls_versions)
+	args.p_hello_version = get_param_value(args.record_version, names.rev_tls_versions)
+
+	if args.ciphers: 
+		args.p_ciphers = map(lambda x: get_param_value(x, names.rev_tls_ciphers), args.ciphers)
+	else:
+		args.p_ciphers = names.tls_ciphers.keys()
+
+	if args.compressions: 
+		args.p_compressions = map(lambda x: get_param_value(x, names.rev_tls_compressions), args.compressions)
+	else:
+		args.p_compressions = names.tls_compressions.keys()
+
+	if args.verbose > 0:
+		print ""
+
+	#script or normal run
+
 	if args.script:
 		import script
-		script.scripts[args.script[0]](args)# get fulladdr from args
+		script.scripts[args.script[0]](args)
 
 	else:
-		if not args.hello_version: args.hello_version = args.record_version
-		record_version = get_param_value(args.record_version, names.rev_tls_versions)
-		hello_version = get_param_value(args.record_version, names.rev_tls_versions)
-
-		if args.ciphers: 
-			ciphers = map(lambda x: get_param_value(x, names.rev_tls_ciphers), args.ciphers)
-		else:
-			ciphers = names.tls_ciphers.keys()
-
-		if args.compressions: 
-			compressions = map(lambda x: get_param_value(x, names.rev_tls_compressions), args.compressions)
-		else:
-			compressions = names.tls_compressions.keys()
-
-
-		if args.verbose > 0:
-			print ""
-
 		sock = socket_from_args(args)
-		send_client_hello(sock, record_version, hello_version, args.verbose, ciphers=ciphers, compressions=compressions)
-		handle_server_response(sock, args.verbose)
+		send_client_hello(sock, args.p_record_version, args.p_hello_version, args.verbose, ciphers=args.p_ciphers, compressions=args.p_compressions)
+		result = handle_server_response(sock, args.verbose)
+
+		#give success if cipher was accepted
+		
+		try:
+			assert(result["contenttype"] == 22)
+		except:
+			exit(1)
+		exit(0)
