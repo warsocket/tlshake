@@ -107,11 +107,17 @@ if __name__ == "__main__":
 	parser.add_argument('--hello-version', type=str, help="Record layer version (default: [used record version])")
 	parser.add_argument('--ciphers', '-c', type=str, nargs="*", help="Cipher(s) to request (default: All known ciphers)")
 	parser.add_argument('--compressions', '-z', type=str, nargs="*", help="Compressions(s) to request (default: All known compressions)")
+	parser.add_argument('--no-auto-extensions', '-x', default=True, action="store_false", help="Disable top off of non specified extensions with sensible values")
+	# parser.add_argument('--extensions', '-x', type=str, help="Extensions to use (default: All known compressions, sni uses host) [Put between quotes!]")
+	# Extensions will be treaded as full fledged options
+
 
 	#TODO TLS addons likle SNI, EDHC curves SCSV, etc
 	parser.add_argument('--starttls', type=str, help="Use Starttls")
 	parser.add_argument('--script', '-s', type=str, nargs="+", help="Script name and params.")
 	args = parser.parse_args()
+
+	print args.no_auto_extensions
 
 	#preprocessing args
 	if not args.hello_version: args.hello_version = args.record_version
@@ -127,6 +133,7 @@ if __name__ == "__main__":
 		args.p_compressions = map(lambda x: get_param_value(x, names.rev_tls_compressions), args.compressions)
 	else:
 		args.p_compressions = names.tls_compressions.keys()
+
 
 	if args.verbose > 0:
 		print ""
