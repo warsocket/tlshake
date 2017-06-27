@@ -85,23 +85,23 @@ class Parser():
 # non TLS-specific helper functions above                                      #
 ################################################################################
 
-def make_client_hello(record_version, handshake_version, **options):
+def make_client_hello(record_version, handshake_version, cipherlist, compressionmethods, **options):
 	#defaults
-	cipherlist=[]
+	# cipherlist=[]
 	extensionlist=[]
-	compressionmethods=["\x00"]
+	# compressionmethods=["\x00"]
 	random = "\xFF"*32
 	sessionid = "\x00"*32
 
-	if "ciphers" in options: cipherlist = options["ciphers"]
+	# if "ciphers" in options: cipherlist = options["ciphers"]
 	if "extensions" in options: extensionlist = options["extensions"]
-	if "compressions" in options: compressionmethods = options["compressions"]
+	# if "compressions" in options: compressionmethods = options["compressions"]
 	if "random" in options: random = options["random"]
 	if "sessionid" in options: sessionid = options["sessionid"]
 
 	#plugins
 	addons = []
-	
+
 
 
 	return pkt(

@@ -39,7 +39,7 @@ def displayname(value, lookuptable={}):
 		return "0x%s" % value.encode("hex")
 
 #This should in time support all params that were being processed in the beginning
-def send_client_hello(sock, record_version, handshake_version, verbosity=0, **options):
+def send_client_hello(sock, record_version, handshake_version, cipherlist, compressionmethods, verbosity=0, **options):
 
 	if verbosity > 1:
 		# print ">>> %s:%d Tls Record version %s ClientHello version %s >> %s:%d" % ( sock.getsockname() + (displayname(record_version, names.tls_versions),) + (displayname(handshake_version, names.tls_versions),) + sock.getpeername() )
@@ -57,7 +57,7 @@ def send_client_hello(sock, record_version, handshake_version, verbosity=0, **op
 		# 	for c in options["ciphers"]:
 		# 		print displayname(c,names.tls_ciphers)
 
-	return sock.sendall( make_client_hello(record_version, handshake_version, **options) ) 
+	return sock.sendall( make_client_hello(record_version, handshake_version, cipherlist, compressionmethods, **options) ) 
 
 
 def handle_server_response(sock, verbosity=0):
@@ -123,9 +123,6 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 	
 
-	print args.elliptic_curves
-
-
 	#preprocessing args
 	if not args.hello_version: args.hello_version = args.record_version
 	args.p_record_version = get_param_value(args.record_version, names.rev_tls_versions)
@@ -150,7 +147,7 @@ if __name__ == "__main__":
 			args.p_elliptic_curves = names.elliptic_curves.keys()
 
 
-	if not args.no_ec_point_format:
+	if not args.no_ec_point_formats:
 		if args.ec_point_formats:
 			args.p_elliptic_curves = map(lambda x: get_param_value(x, names.ec_points), args.ec_point_formats)
 		else:
@@ -167,7 +164,7 @@ if __name__ == "__main__":
 
 	else:
 		sock = socket_from_args(args)
-		send_client_hello(sock, args.p_record_version, args.p_hello_version, args.verbose, ciphers=args.p_ciphers, compressions=args.p_compressions)
+		send_client_hello(sock, args.p_record_version, args.p_hello_version, args.p_ciphers, args.p_compressions, args.verbose)
 		result = handle_server_response(sock, args.verbose)
 
 		#give success if cipher was accepted

@@ -38,9 +38,9 @@ def tlsenum(args):
 			emit = True
 
 			sock = socket_from_args(args)
-			send_client_hello(sock, version, version, ciphers=ciphers)
+			send_client_hello(sock, version, version, ciphers, args.p_compressions)
 			data = handle_server_response(sock)
-
+			
 scripts = {
 	'tlsenum': tlsenum,
 }
