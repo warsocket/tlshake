@@ -60,6 +60,12 @@ def iff(statement, *data):
 	else:
 		return ""
 
+def resolve(d, k):
+	try:
+		return d[k]
+	except:
+		return ""
+
 
 class Parser():
 	def __init__(self, data):
