@@ -28,6 +28,12 @@ def tlsenum(args):
 
 		ciphers = set(names.tls_ciphers.keys())
 
+		options = {}
+		if not args.no_ec_point_formats:
+			options["ec"] = args.p_elliptic_curves
+		if not args.no_ec_point_formats:
+			options["ecpf"] = args.p_ec_point_formats
+
 		data = {"hello_cipher": ""} #stub to handle start condition
 		emit = False
 		while "hello_cipher" in data:
@@ -38,7 +44,7 @@ def tlsenum(args):
 			emit = True
 
 			sock = socket_from_args(args)
-			send_client_hello(sock, version, version, ciphers, args.p_compressions)
+			send_client_hello(sock, version, version, ciphers, args.p_compressions, **options)
 			data = handle_server_response(sock)
 			
 scripts = {

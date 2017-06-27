@@ -41,10 +41,10 @@ def pkt(*argv):
 			return argv[0]
 
 def sizeme_short(pre_data, post_data): #return data with size of the data represented at %s ergo : sizeme("te%sst") -> t e 0x00 0x04 s t
-	return "".join([pre_data, to_short(len(pre_data) + len(post_data)), post_data])
+	return [pre_data, to_short(len(pre_data) + len(post_data)), post_data]
 
 def sizeme_byte(pre_data, post_data): #return data with size of the data represented at %s ergo : sizeme("te%sst") -> t e 0x00 0x04 s t
-	return "".join([pre_data, to_byte(len(pre_data) + len(post_data)), post_data])
+	return [pre_data, to_byte(len(pre_data) + len(post_data)), post_data]
 
 def presize_short(*data):
 	data = pkt(data)
@@ -53,6 +53,12 @@ def presize_short(*data):
 def presize_byte(*data):
 	data = pkt(data)
 	return sizeme_byte("", data)
+
+def iff(statement, *data):
+	if statement:
+		return data
+	else:
+		return ""
 
 
 class Parser():
@@ -94,7 +100,7 @@ def make_client_hello(record_version, handshake_version, cipherlist, compression
 	sessionid = "\x00"*32
 
 	# if "ciphers" in options: cipherlist = options["ciphers"]
-	if "extensions" in options: extensionlist = options["extensions"]
+	# if "extensions" in options: extensionlist = options["extensions"]
 	# if "compressions" in options: compressionmethods = options["compressions"]
 	if "random" in options: random = options["random"]
 	if "sessionid" in options: sessionid = options["sessionid"]
@@ -118,7 +124,28 @@ def make_client_hello(record_version, handshake_version, cipherlist, compression
 				presize_short(cipherlist), 
 				# chr(len(compressionmethods)), "".join(map(chr,compressionmethods)),
 				presize_byte(compressionmethods),
-				presize_short(extensionlist) 
+				presize_short(
+					iff("ecpf" in options, 
+						(
+							"\x00\x0B", #ellicptic curve point format magic number
+							presize_short(
+								presize_byte(
+									options['ecpf']
+								)
+							)
+						)
+					),
+					iff("ec" in options, 
+						(
+							"\x00\x0A", #ellicptic curve magic number
+							presize_short(
+								presize_short(
+									options['ec']
+								)
+							)
+						)
+					)
+				) 
 			) 
 		) 
 	)

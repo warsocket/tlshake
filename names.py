@@ -402,6 +402,11 @@ elliptic_curves = {
 '\x00\x17' : 'secp256r1',
 '\x00\x18' : 'secp384r1',
 '\x00\x19' : 'secp521r1',
+'\x00\x1A' : 'brainpoolP256r1',
+'\x00\x1B' : 'brainpoolP384r1',
+'\x00\x1C' : 'brainpoolP512r1',
+'\x00\x1D' : 'ecdh_x25519',
+'\x00\x1E' : 'ecdh_x448',
 '\xFF\x01' : 'arbitrary_explicit_prime_curves',
 '\xFF\x02' : 'arbitrary_explicit_char2_curves',
 }

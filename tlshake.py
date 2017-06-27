@@ -149,9 +149,9 @@ if __name__ == "__main__":
 
 	if not args.no_ec_point_formats:
 		if args.ec_point_formats:
-			args.p_elliptic_curves = map(lambda x: get_param_value(x, names.ec_points), args.ec_point_formats)
+			args.p_ec_point_formats = map(lambda x: get_param_value(x, names.ec_points), args.ec_point_formats)
 		else:
-			args.ec_point_formats = names.ec_points.keys()
+			args.p_ec_point_formats = names.ec_points.keys()
 
 	if args.verbose > 0:
 		print ""
@@ -164,7 +164,13 @@ if __name__ == "__main__":
 
 	else:
 		sock = socket_from_args(args)
-		send_client_hello(sock, args.p_record_version, args.p_hello_version, args.p_ciphers, args.p_compressions, args.verbose)
+		options = {}
+		if not args.no_ec_point_formats:
+			options["ec"] = args.p_elliptic_curves
+		if not args.no_ec_point_formats:
+			options["ecpf"] = args.p_ec_point_formats
+
+		send_client_hello(sock, args.p_record_version, args.p_hello_version, args.p_ciphers, args.p_compressions, args.verbose, **options)
 		result = handle_server_response(sock, args.verbose)
 
 		#give success if cipher was accepted
