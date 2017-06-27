@@ -107,17 +107,24 @@ if __name__ == "__main__":
 	parser.add_argument('--hello-version', type=str, help="Record layer version (default: [used record version])")
 	parser.add_argument('--ciphers', '-c', type=str, nargs="*", help="Cipher(s) to request (default: All known ciphers)")
 	parser.add_argument('--compressions', '-z', type=str, nargs="*", help="Compressions(s) to request (default: All known compressions)")
-	parser.add_argument('--no-auto-extensions', '-x', default=True, action="store_false", help="Disable top off of non specified extensions with sensible values")
-	# parser.add_argument('--extensions', '-x', type=str, help="Extensions to use (default: All known compressions, sni uses host) [Put between quotes!]")
-	# Extensions will be treaded as full fledged options
 
+	# Extensions will be treaded as full fledged options
+	parser.add_argument('--no-addons', '-x' , default=False, action="store_true", help="Disable addon section (and thus all addons)")
+
+	parser.add_argument('--elliptic-curves', type=str, nargs="*", help="Elliptic Curve(s) to request (default: All known curves)")	
+	parser.add_argument('--no-elliptic-curves', default=False, action="store_true", help="Disable elliptic curve addon")
+
+	parser.add_argument('--ec-point-formats', type=str, nargs="*", help="Elliptic Curve point format(s) to request (default: All known formats)")	
+	parser.add_argument('--no-ec-point-formats', default=False, action="store_true", help="Disable elliptic curve point format addon")
 
 	#TODO TLS addons likle SNI, EDHC curves SCSV, etc
 	parser.add_argument('--starttls', type=str, help="Use Starttls")
 	parser.add_argument('--script', '-s', type=str, nargs="+", help="Script name and params.")
 	args = parser.parse_args()
+	
 
-	print args.no_auto_extensions
+	print args.elliptic_curves
+
 
 	#preprocessing args
 	if not args.hello_version: args.hello_version = args.record_version
@@ -134,6 +141,20 @@ if __name__ == "__main__":
 	else:
 		args.p_compressions = names.tls_compressions.keys()
 
+
+	#preprocessing addons
+	if not args.no_elliptic_curves:
+		if args.elliptic_curves:
+			args.p_elliptic_curves = map(lambda x: get_param_value(x, names.elliptic_curves), args.elliptic_curves)
+		else:
+			args.p_elliptic_curves = names.elliptic_curves.keys()
+
+
+	if not args.no_ec_point_format:
+		if args.ec_point_formats:
+			args.p_elliptic_curves = map(lambda x: get_param_value(x, names.ec_points), args.ec_point_formats)
+		else:
+			args.ec_point_formats = names.ec_points.keys()
 
 	if args.verbose > 0:
 		print ""

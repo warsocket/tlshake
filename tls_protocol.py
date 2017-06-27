@@ -99,6 +99,11 @@ def make_client_hello(record_version, handshake_version, **options):
 	if "random" in options: random = options["random"]
 	if "sessionid" in options: sessionid = options["sessionid"]
 
+	#plugins
+	addons = []
+	
+
+
 	return pkt(
 		"\x16", 
 		record_version, 
@@ -114,9 +119,9 @@ def make_client_hello(record_version, handshake_version, **options):
 				# chr(len(compressionmethods)), "".join(map(chr,compressionmethods)),
 				presize_byte(compressionmethods),
 				presize_short(extensionlist) 
-				) 
 			) 
-		)
+		) 
+	)
 
 def parse_server_response(data):
 	p = Parser(data)

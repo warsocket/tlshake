@@ -375,3 +375,41 @@ tls_compressions = {
 '\x01' : 'DEFLATE',
 }
 rev_tls_compressions = rev(tls_compressions)
+
+elliptic_curves = {
+'\x00\x01' : 'sect163k1',
+'\x00\x02' : 'sect163r1',
+'\x00\x03' : 'sect163r2',
+'\x00\x04' : 'sect193r1',
+'\x00\x05' : 'sect193r2',
+'\x00\x06' : 'sect233k1',
+'\x00\x07' : 'sect233r1',
+'\x00\x08' : 'sect239k1',
+'\x00\x09' : 'sect283k1',
+'\x00\x0A' : 'sect283r1',
+'\x00\x0B' : 'sect409k1',
+'\x00\x0C' : 'sect409r1',
+'\x00\x0D' : 'sect571k1',
+'\x00\x0E' : 'sect571r1',
+'\x00\x0F' : 'secp160k1',
+'\x00\x10' : 'secp160r1',
+'\x00\x11' : 'secp160r2',
+'\x00\x12' : 'secp192k1',
+'\x00\x13' : 'secp192r1',
+'\x00\x14' : 'secp224k1',
+'\x00\x15' : 'secp224r1',
+'\x00\x16' : 'secp256k1',
+'\x00\x17' : 'secp256r1',
+'\x00\x18' : 'secp384r1',
+'\x00\x19' : 'secp521r1',
+'\xFF\x01' : 'arbitrary_explicit_prime_curves',
+'\xFF\x02' : 'arbitrary_explicit_char2_curves',
+}
+rev_elliptic_curves = rev(elliptic_curves)
+
+ec_points = {
+'\x00' : 'uncompressed',
+'\x01' : 'ansiX962_compressed_prime',
+'\x02' : 'ansiX962_compressed_char2',
+}
+rev_ec_points = rev(ec_points)
