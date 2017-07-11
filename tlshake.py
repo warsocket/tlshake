@@ -32,6 +32,15 @@ def socket_from_args(args):
 	return sock
 
 
+def options_from_args(args):
+	options = {}
+	if not args.no_elliptic_curves:
+		options["ec"] = args.p_elliptic_curves
+	if not args.no_ec_point_formats:
+		options["ecpf"] = args.p_ec_point_formats
+
+	return options
+
 def displayname(value, lookuptable={}):
 	if value in lookuptable:
 		return lookuptable[value]
@@ -163,11 +172,7 @@ if __name__ == "__main__":
 
 	else:
 		sock = socket_from_args(args)
-		options = {}
-		if not args.no_elliptic_curves:
-			options["ec"] = args.p_elliptic_curves
-		if not args.no_ec_point_formats:
-			options["ecpf"] = args.p_ec_point_formats
+		options = options_from_args(args)
 
 		send_client_hello(sock, args.p_record_version, args.p_hello_version, args.p_ciphers, args.p_compressions, args.verbose, **options)
 		result = handle_server_response(sock, args.verbose)
