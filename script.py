@@ -21,7 +21,7 @@ from tlshake import displayname, send_client_hello, handle_server_response, sock
 
 def enumciphers(args):
 
-	for version in names.tls_versions.keys():
+	for version in sorted(names.tls_versions.keys(), reverse=True):
 
 		# version = names.rev_tls_versions['TLSv1.2']
 		if args.verbose > 1:

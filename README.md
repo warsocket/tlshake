@@ -1,2 +1,2 @@
 # tlshake
-tool to perform various partial TLS handshakes (CleintHello)
+tool to perform various partial TLS handshakes (ClientHello)
