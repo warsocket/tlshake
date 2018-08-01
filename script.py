@@ -28,7 +28,7 @@ def enumciphers(args):
 			print ""
 			print "=========== %s ==========" % names.tls_versions[version]
 
-		ciphers = set(names.tls_ciphers.keys())
+		ciphers = set(args.p_ciphers)
 
 		options = options_from_args(args)
 
@@ -50,7 +50,7 @@ def enumcurves(args):
 	# create copnnection with an EC cipher
 	rx = re.compile("^TLS_ECDHE?_")
 
-	ciphers = filter( lambda key: rx.match(names.tls_ciphers[key]), names.tls_ciphers )
+	ciphers = filter( lambda key: rx.match(names.tls_ciphers[key]), args.p_ciphers )
 
 	options = options_from_args(args)
 	options["ec"] = names.elliptic_curves.keys()
