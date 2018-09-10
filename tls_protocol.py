@@ -131,6 +131,16 @@ def make_client_hello(record_version, handshake_version, cipherlist, compression
 				# chr(len(compressionmethods)), "".join(map(chr,compressionmethods)),
 				presize_byte(compressionmethods),
 				presize_short(
+					# iff("supportedversions" in options, 
+					# 	(
+					# 		"\x00\x2B", #(43) TLs1.3 draft vsupported versions addons
+					# 		presize_short(
+					# 			presize_byte(
+					# 				options['supportedversions']
+					# 			)
+					# 		)
+					# 	)
+					# ),					
 					iff("ecpf" in options, 
 						(
 							"\x00\x0B", #ellicptic curve point format magic number

@@ -33,6 +33,8 @@ def socket_from_args(args):
 
 def options_from_args(args):
 	options = {}
+	# if not args.no_supported_versions:
+	# 	options["supportedversions"] = args.p_supported_versions
 	if not args.no_elliptic_curves:
 		options["ec"] = args.p_elliptic_curves
 	if not args.no_ec_point_formats:
@@ -117,10 +119,12 @@ if __name__ == "__main__":
 	parser.add_argument('--compressions', '-z', type=str, nargs="*", help="Compressions(s) to request (default: All known compressions)")
 
 	# Extensions will be treaded as full fledged options
-	parser.add_argument('--no-addons-xxx', '-x' ,action="store_true", help="Disable addon section (and thus all addons)")
+	parser.add_argument('--no-addons', '-x' ,action="store_true", help="Disable addon section (and thus all addons)")
+	# parser.add_argument('--no-supported-versions', action="store_true", help="Disable supported  versions addon")
 	parser.add_argument('--no-elliptic-curves', action="store_true", help="Disable elliptic curve addon")
 	parser.add_argument('--no-ec-point-formats', action="store_true", help="Disable elliptic curve point format addon")
 
+	# parser.add_argument('--supported-versions', type=str, nargs="*", help="Supported versions to send (default: All known versions)")	
 	parser.add_argument('--elliptic-curves', type=str, nargs="*", help="Elliptic Curve(s) to request (default: All known curves)")	
 	parser.add_argument('--ec-point-formats', type=str, nargs="*", help="Elliptic Curve point format(s) to request (default: All known formats)")	
 	
@@ -147,6 +151,12 @@ if __name__ == "__main__":
 
 
 	#preprocessing addons
+	# if not args.no_supported_versions:
+	# 	if args.supported_versions:
+	# 		args.p_supported_versions = map(lambda x: get_param_value(x, names.rev_tls_versions), args.supported_versions)
+	# 	else:
+	# 		args.p_supported_versions = sorted(names.tls_versions.keys(), reverse=True) #high to low
+
 	if not args.no_elliptic_curves:
 		if args.elliptic_curves:
 			args.p_elliptic_curves = map(lambda x: get_param_value(x, names.rev_elliptic_curves), args.elliptic_curves)
