@@ -21,6 +21,14 @@ from tlshake import displayname, send_client_hello, handle_server_response, sock
 
 def enumciphers(args):
 
+	script_options = args.script [1:]
+	if script_options == ["help"]:
+		print "enumciphers help: states this help"
+		print "enumciphers: Runs enumcipher in normal mode (just enumerates trough elimination)"
+		print "enumciphers hard: Runs enumcipher in hard mode (enumerates all known ciphers one by one and then enumerates trough elimination)"
+		return
+
+
 	for version in names.tls_versions.keys():
 
 		# version = names.rev_tls_versions['TLSv1.2']
@@ -28,9 +36,25 @@ def enumciphers(args):
 			print ""
 			print "=========== %s ==========" % names.tls_versions[version]
 
-		ciphers = set(names.tls_ciphers.keys())
-
+		prospect_ciphers = set(names.tls_ciphers.keys())
 		options = options_from_args(args)
+
+
+		#first we determine all allowed ciphers before enumerating them in a declining fasion
+		
+
+		if script_options == ["hard"]:
+			ciphers = set()
+			N = 0
+			for cipher in prospect_ciphers:
+				N += 1
+				sock = socket_from_args(args)
+				send_client_hello(sock, version, version, set([cipher]), args.p_compressions, **options)
+				data = handle_server_response(sock)
+				if "hello_cipher" in data: ciphers.add(cipher)
+		else:
+			ciphers = prospect_ciphers
+
 
 		data = {"hello_cipher": ""} #stub to handle start condition
 		emit = False
