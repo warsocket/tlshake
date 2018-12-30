@@ -60,6 +60,12 @@ def iff(statement, *data):
 	else:
 		return ""
 
+def ifff(statement, func2data):
+	if statement:
+		return func2data()
+	else:
+		return ""
+
 def resolve(d, k):
 	try:
 		return d[k]
@@ -141,8 +147,8 @@ def make_client_hello(record_version, handshake_version, cipherlist, compression
 					# 		)
 					# 	)
 					# ),					
-					iff("ecpf" in options, 
-						(
+					ifff("ecpf" in options, 
+						lambda: pkt(
 							"\x00\x0B", #ellicptic curve point format magic number
 							presize_short(
 								presize_byte(
@@ -151,8 +157,8 @@ def make_client_hello(record_version, handshake_version, cipherlist, compression
 							)
 						)
 					),
-					iff("ec" in options, 
-						(
+					ifff("ec" in options, 
+						lambda: pkt(
 							"\x00\x0A", #ellicptic curve magic number
 							presize_short(
 								presize_short(

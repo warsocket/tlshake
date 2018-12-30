@@ -39,6 +39,7 @@ def options_from_args(args):
 		options["ec"] = args.p_elliptic_curves
 	if not args.no_ec_point_formats:
 		options["ecpf"] = args.p_ec_point_formats
+	# if args.
 
 	return options
 
@@ -128,10 +129,13 @@ if __name__ == "__main__":
 	parser.add_argument('--elliptic-curves', type=str, nargs="*", help="Elliptic Curve(s) to request (default: All known curves)")	
 	parser.add_argument('--ec-point-formats', type=str, nargs="*", help="Elliptic Curve point format(s) to request (default: All known formats)")	
 	
-
 	#TODO TLS addons likle SNI, EDHC curves SCSV, etc
 	parser.add_argument('--starttls', type=str, help="Use Starttls")
 	parser.add_argument('--script', '-s', type=str, nargs="+", help="Script name and params.")
+
+	#parser.add_argument('--tls1.3', action="store_true", help="tweak all settings that are needed to conform to the Tlsv1.3 standard")
+
+	#parser.add_argument('--supportedversions', type=str, nargs="*", help="Set content of supportedversions header")
 	args = parser.parse_args()
 	
 	#preprocessing args
