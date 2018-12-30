@@ -21,7 +21,6 @@ from tlshake import displayname, send_client_hello, handle_server_response, sock
 
 def enumciphers(args):
 
-<<<<<<< HEAD
 	script_options = args.script [1:]
 	if script_options == ["help"]:
 		print "enumciphers help: states this help"
@@ -31,21 +30,13 @@ def enumciphers(args):
 
 
 	for version in names.tls_versions.keys():
-=======
-	for version in sorted(names.tls_versions.keys(), reverse=True):
->>>>>>> bea51cdf1eca84177b80f81c28465383fb3c7ea5
 
 		# version = names.rev_tls_versions['TLSv1.2']
 		if args.verbose > 1:
 			print ""
 			print "=========== %s ==========" % names.tls_versions[version]
 
-<<<<<<< HEAD
 		prospect_ciphers = set(names.tls_ciphers.keys())
-=======
-		ciphers = set(args.p_ciphers)
-
->>>>>>> bea51cdf1eca84177b80f81c28465383fb3c7ea5
 		options = options_from_args(args)
 
 
@@ -83,7 +74,7 @@ def enumcurves(args):
 	# create copnnection with an EC cipher
 	rx = re.compile("^TLS_ECDHE?_")
 
-	ciphers = filter( lambda key: rx.match(names.tls_ciphers[key]), args.p_ciphers )
+	ciphers = filter( lambda key: rx.match(names.tls_ciphers[key]), names.tls_ciphers )
 
 	options = options_from_args(args)
 	options["ec"] = names.elliptic_curves.keys()
