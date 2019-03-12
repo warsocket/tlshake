@@ -60,6 +60,7 @@ def iff(statement, *data):
 	else:
 		return ""
 
+#retuirn function instead of reolved statement at cnlude time which prevents unreolved symbol erros
 def ifff(statement, func2data):
 	if statement:
 		return func2data()
@@ -120,8 +121,6 @@ def make_client_hello(record_version, handshake_version, cipherlist, compression
 	#plugins
 	addons = []
 
-
-
 	return pkt(
 		"\x16", 
 		record_version, 
@@ -137,16 +136,29 @@ def make_client_hello(record_version, handshake_version, cipherlist, compression
 				# chr(len(compressionmethods)), "".join(map(chr,compressionmethods)),
 				presize_byte(compressionmethods),
 				presize_short(
-					# iff("supportedversions" in options, 
-					# 	(
-					# 		"\x00\x2B", #(43) TLs1.3 draft vsupported versions addons
-					# 		presize_short(
-					# 			presize_byte(
-					# 				options['supportedversions']
-					# 			)
-					# 		)
-					# 	)
-					# ),					
+					ifff(options["sni"] != None,
+						lambda: pkt(
+							"\x00\x00",
+							presize_short(
+								presize_short(
+									"\x00",
+									presize_short(
+										options['sni']
+									)
+								)
+							)
+						)
+					),
+					ifff("supportedversions" in options, 
+						lambda: pkt(
+							"\x00\x2B", #(43) TLs1.3 draft vsupported versions addons
+							presize_short(
+								presize_byte(
+									options['supportedversions']
+								)
+							)
+						)
+					),					
 					ifff("ecpf" in options, 
 						lambda: pkt(
 							"\x00\x0B", #ellicptic curve point format magic number

@@ -32,14 +32,14 @@ def socket_from_args(args):
 
 
 def options_from_args(args):
-	options = {}
-	# if not args.no_supported_versions:
-	# 	options["supportedversions"] = args.p_supported_versions
+	options = {"sni": args.sni}
+	if args.enable_supported_versions:
+		options["supportedversions"] = args.p_supported_versions
 	if not args.no_elliptic_curves:
 		options["ec"] = args.p_elliptic_curves
 	if not args.no_ec_point_formats:
 		options["ecpf"] = args.p_ec_point_formats
-	# if args.
+	
 
 	return options
 
@@ -121,22 +121,32 @@ if __name__ == "__main__":
 
 	# Extensions will be treaded as full fledged options
 	parser.add_argument('--no-addons', '-x' ,action="store_true", help="Disable addon section (and thus all addons)")
-	# parser.add_argument('--no-supported-versions', action="store_true", help="Disable supported  versions addon")
+	parser.add_argument('--enable-supported-versions', action="store_true", help="Enable supported versions addon")
 	parser.add_argument('--no-elliptic-curves', action="store_true", help="Disable elliptic curve addon")
 	parser.add_argument('--no-ec-point-formats', action="store_true", help="Disable elliptic curve point format addon")
 
-	# parser.add_argument('--supported-versions', type=str, nargs="*", help="Supported versions to send (default: All known versions)")	
+	parser.add_argument('--supported-versions', type=str, nargs="*", help="Supported versions to send (default: All known versions)")	
 	parser.add_argument('--elliptic-curves', type=str, nargs="*", help="Elliptic Curve(s) to request (default: All known curves)")	
 	parser.add_argument('--ec-point-formats', type=str, nargs="*", help="Elliptic Curve point format(s) to request (default: All known formats)")	
 	
 	#TODO TLS addons likle SNI, EDHC curves SCSV, etc
+	parser.add_argument('--sni', type=str, help="SNI server hostname")
 	parser.add_argument('--starttls', type=str, help="Use Starttls")
 	parser.add_argument('--script', '-s', type=str, nargs="+", help="Script name and params.")
 
-	#parser.add_argument('--tls1.3', action="store_true", help="tweak all settings that are needed to conform to the Tlsv1.3 standard")
-
-	#parser.add_argument('--supportedversions', type=str, nargs="*", help="Set content of supportedversions header")
+	#The followng cli options work
+	#./tlshake.py tls13.crypto.mozilla.org --enable-supported-version -z null
+	parser.add_argument('--tls1.3', action="store_true", help="tweak all settings that are needed to conform to the Tlsv1.3 standard (It's compilcated)")
 	args = parser.parse_args()
+
+	#setting the TlsV1.3 options
+	if args.__getattribute__("tls1.3"): # we have to do it this way because of the dot
+		args.record_version = "TLSv1.2"
+		args.enable_supported_versions = True
+		args.compressions = ['null']
+
+
+	
 	
 	#preprocessing args
 	if not args.hello_version: args.hello_version = args.record_version
@@ -155,11 +165,11 @@ if __name__ == "__main__":
 
 
 	#preprocessing addons
-	# if not args.no_supported_versions:
-	# 	if args.supported_versions:
-	# 		args.p_supported_versions = map(lambda x: get_param_value(x, names.rev_tls_versions), args.supported_versions)
-	# 	else:
-	# 		args.p_supported_versions = sorted(names.tls_versions.keys(), reverse=True) #high to low
+	if args.enable_supported_versions:
+		if args.supported_versions:
+			args.p_supported_versions = map(lambda x: get_param_value(x, names.rev_tls_versions), args.supported_versions)
+		else:
+			args.p_supported_versions = sorted(names.tls_versions.keys(), reverse=True) #high to low
 
 	if not args.no_elliptic_curves:
 		if args.elliptic_curves:

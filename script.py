@@ -72,7 +72,7 @@ def enumciphers(args):
 
 def enumcurves(args):
 	# create copnnection with an EC cipher
-	rx = re.compile("^TLS_ECDHE?_")
+	rx = re.compile("^TLS[0-9]*_ECDHE?_")
 
 	ciphers = filter( lambda key: rx.match(names.tls_ciphers[key]), names.tls_ciphers )
 
