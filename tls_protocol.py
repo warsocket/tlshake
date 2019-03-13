@@ -79,10 +79,15 @@ class Parser():
 		self.data = data
 		self.offset = 0
 
-	def get(self, i):
-		oldoffset = self.offset
-		self.offset += i
-		return self.data[oldoffset : self.offset]
+	def get(self, i=None):
+		if i != None:
+			oldoffset = self.offset
+			self.offset += i
+			return self.data[oldoffset : self.offset]
+		else: # get all
+			oldoffset = self.offset
+			self.offset = len(self.data)
+			return self.data[oldoffset:]
 
 	def seek(self, i):
 		self.offset = i
@@ -201,6 +206,8 @@ def parse_server_response(data):
 			s["hello_sessionid"] = p.get_struct_byte()
 			s["hello_cipher"] = p.get(2)
 			s["hello_compression"] = p.get(1)
+			s["raw_addons"] = p.get(p.getshortnum())
+			s["rest"] = p.get() # get the rest
 		elif s["contenttype"] == 21: #Alert
 			s["alert_level"] = p.getbytenum()
 			s["alert_description"] = p.getbytenum()

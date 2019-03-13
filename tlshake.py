@@ -184,7 +184,7 @@ if __name__ == "__main__":
 		else:
 			args.p_ec_point_formats = names.ec_points.keys()
 
-	if args.verbose > 0:
+	if (args.verbose > 0) and not bool(args.script):
 		print ""
 
 	#script or normal run

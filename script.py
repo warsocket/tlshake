@@ -17,7 +17,25 @@
 import socket
 import names
 import re
-from tlshake import displayname, send_client_hello, handle_server_response, socket_from_args, options_from_args
+from tlshake import displayname, send_client_hello, handle_server_response, socket_from_args, options_from_args, parse_server_response
+
+
+# def getcertificate(args):
+# 	sock = socket_from_args(args)
+# 	options = options_from_args(args)
+
+# 	send_client_hello(sock, args.p_record_version, args.p_hello_version, args.p_ciphers, args.p_compressions, **options)
+
+# 	try:
+# 		data = sock.recv( 0xFFFF )
+# 	except Exception as e:
+# 		print e
+# 		return {}
+
+# 	response = parse_server_response(data)
+# 	if "certificate" in response:
+# 		print response["certificate"]
+
 
 def enumciphers(args):
 
@@ -82,7 +100,6 @@ def enumcurves(args):
 
 	sock = socket_from_args(args)
 	send_client_hello(sock, names.rev_tls_versions["SSLv3.0"], names.rev_tls_versions["TLSv1.2"], ciphers, args.p_compressions, **options)
-	data = handle_server_response(sock)
 
 
 	if "hello_cipher" not in data:
@@ -114,4 +131,5 @@ def enumcurves(args):
 scripts = {
 	'enumciphers': enumciphers,
 	'enumcurves': enumcurves,
+	# 'getcertificate': getcertificate,
 }
