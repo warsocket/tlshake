@@ -100,6 +100,7 @@ def enumcurves(args):
 
 	sock = socket_from_args(args)
 	send_client_hello(sock, names.rev_tls_versions["SSLv3.0"], names.rev_tls_versions["TLSv1.2"], ciphers, args.p_compressions, **options)
+	data = handle_server_response(sock)
 
 
 	if "hello_cipher" not in data:
