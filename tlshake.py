@@ -151,7 +151,7 @@ if __name__ == "__main__":
 	#preprocessing args
 	if not args.hello_version: args.hello_version = args.record_version
 	args.p_record_version = get_param_value(args.record_version, names.rev_tls_versions)
-	args.p_hello_version = get_param_value(args.record_version, names.rev_tls_versions)
+	args.p_hello_version = get_param_value(args.hello_version, names.rev_tls_versions)
 
 	if args.ciphers: 
 		args.p_ciphers = map(lambda x: get_param_value(x, names.rev_tls_ciphers), args.ciphers)
