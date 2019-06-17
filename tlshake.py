@@ -39,7 +39,8 @@ def options_from_args(args):
 		options["ec"] = args.p_elliptic_curves
 	if not args.no_ec_point_formats:
 		options["ecpf"] = args.p_ec_point_formats
-	
+	options["ticket"] = not args.no_session_ticket
+	options["tls13goop"] = args.tls13_goop
 
 	return options
 
@@ -124,6 +125,8 @@ if __name__ == "__main__":
 	parser.add_argument('--enable-supported-versions', action="store_true", help="Enable supported versions addon")
 	parser.add_argument('--no-elliptic-curves', action="store_true", help="Disable elliptic curve addon")
 	parser.add_argument('--no-ec-point-formats', action="store_true", help="Disable elliptic curve point format addon")
+	parser.add_argument('--no-session-ticket', action="store_true", help="Disable empty session ticket addon")
+	parser.add_argument('--tls13-goop', action="store_true", default=False, help="Enable non-mandatory addons whicht are de-facto mandatory by some servers")
 
 	parser.add_argument('--supported-versions', type=str, nargs="*", help="Supported versions to send (default: All known versions)")	
 	parser.add_argument('--elliptic-curves', type=str, nargs="*", help="Elliptic Curve(s) to request (default: All known curves)")	
@@ -141,13 +144,12 @@ if __name__ == "__main__":
 
 	#setting the TlsV1.3 options
 	if args.__getattribute__("tls1.3"): # we have to do it this way because of the dot
-		args.record_version = "TLSv1.2"
+		args.record_version = "TLSv1.0"
+		args.hello_version = "TLSv1.2"
 		args.enable_supported_versions = True
 		args.compressions = ['null']
+		args.tls13_goop = True
 
-
-	
-	
 	#preprocessing args
 	if not args.hello_version: args.hello_version = args.record_version
 	args.p_record_version = get_param_value(args.record_version, names.rev_tls_versions)
